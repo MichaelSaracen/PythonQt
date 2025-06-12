@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_Menu">
+    <property name="title">
+     <string>&amp;Datei</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_Bearbeiten">
+    <property name="title">
+     <string>&amp;Bearbeiten</string>
+    </property>
+    <widget class="QMenu" name="menu_Einf_gen">
+     <property name="title">
+      <string>&amp;Einfügen</string>
+     </property>
+     <addaction name="actionBrand"/>
+     <addaction name="actionModel"/>
+    </widget>
+    <addaction name="menu_Einf_gen"/>
+   </widget>
+   <addaction name="menu_Menu"/>
+   <addaction name="menu_Bearbeiten"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionBrand">
+   <property name="text">
+    <string>Marke</string>
+   </property>
+  </action>
+  <action name="actionModel">
+   <property name="text">
+    <string>Modell</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
