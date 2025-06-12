@@ -4,6 +4,10 @@ from PySide6.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve
 from PySide6.QtWidgets import QWidget
 
 
+
+
+
+
 class Behavior:
     def __init__(self, target: QWidget, property_name: str, *, end_value: Any):
 
@@ -17,6 +21,8 @@ class Behavior:
             target._animations[property_name] = anim
 
         self._anim = target._animations[property_name]
+        print(target.property(property_name))
+        #self._anim.valueChanged.connect(lambda v: print(v))
 
         current_value: Any = getattr(target, property_name)
 

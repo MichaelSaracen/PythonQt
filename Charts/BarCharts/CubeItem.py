@@ -3,7 +3,7 @@ __author__ = "Michael Saracen"
 
 import sys
 
-from PySide6.QtCore import Property, QRect, QMargins
+from PySide6.QtCore import Property, QRect, QMargins, Signal
 from PySide6.QtGui import QPainter, QColor, QPolygon, Qt, QPen, QFont, QPainterPath
 from PySide6.QtWidgets import QWidget, QApplication
 
@@ -13,9 +13,14 @@ from utils.animations import Behavior
 
 
 class CubeItem(QWidget):
+    itemClicked: Signal = Signal()
+
     _base_color: QColor
+    _click_color: QColor
+    _color_fallback: QColor
     _color_hover: QColor
     _label_name: str
+    _value: float
 
     def __init__(self, parent: QWidget=None):
         super().__init__(parent=parent)
@@ -23,15 +28,29 @@ class CubeItem(QWidget):
 
         self._base_color: QColor = QColor(6, 120, 182)
         self._label_name = "CubeItem - V8"
-        self._color_hover = self._base_color.lighter(200)
+        self._color_hover = self._base_color.lighter(150)
+        self._click_color = self._base_color.lighter(200)
+        self._color_fallback = self._base_color
+        self._value = 0.0
 
         add_shadow(self)
 
+    def mousePressEvent(self, event, /):
+        Behavior(self, "base_color", end_value=self._click_color).start()
+        self.itemClicked.emit()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event, /):
+        Behavior(self, "base_color", end_value=self._color_hover).start()
+        super().mouseReleaseEvent(event)
+
     def enterEvent(self, event, /):
-        Behavior(self, "base_color", end_value=self._color_hover).forward()
+        Behavior(self, "base_color", end_value=self._color_hover).start()
+        super().enterEvent(event)
 
     def leaveEvent(self, event, /):
-        Behavior(self, "base_color", end_value=self._color_hover).backward()
+        Behavior(self, "base_color", end_value=self._color_fallback).start()
+        super().leaveEvent(event)
 
     def paintEvent(self, event, /):
         """
