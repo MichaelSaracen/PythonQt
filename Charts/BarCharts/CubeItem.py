@@ -2,19 +2,19 @@ __version__ = "1.0.0"
 __author__ = "Michael Saracen"
 
 import sys
-from dataclasses import dataclass
-from typing import List
 
-from PySide6.QtCore import QPoint, Signal, Property, QPropertyAnimation, QRect, QPointF, QEasingCurve, Slot
-from PySide6.QtGui import QPainter, QColor, QPolygon, QLinearGradient, Qt, QPen, QFont, QPainterPath, QTransform
+from PySide6.QtCore import Property, QRect, QMargins
+from PySide6.QtGui import QPainter, QColor, QPolygon, Qt, QPen, QFont, QPainterPath
 from PySide6.QtWidgets import QWidget, QApplication
 
-from BarCharts import _CubeItemData
-from utils import add_shadow, font_metrics, linear_gradient, Behavior
+from BarCharts._CubeItemData import _CubeItemData
+from utils import linear_gradient, font_metrics, add_shadow
+from utils.animations import Behavior
 
 
 class CubeItem(QWidget):
     _base_color: QColor
+    _color_hover: QColor
     _label_name: str
 
     def __init__(self, parent: QWidget=None):
@@ -23,9 +23,15 @@ class CubeItem(QWidget):
 
         self._base_color: QColor = QColor(6, 120, 182)
         self._label_name = "CubeItem - V8"
+        self._color_hover = self._base_color.lighter(200)
+
+        add_shadow(self)
 
     def enterEvent(self, event, /):
-        Behavior.on(self, b"base_color", QColor("red"))
+        Behavior(self, "base_color", end_value=self._color_hover).forward()
+
+    def leaveEvent(self, event, /):
+        Behavior(self, "base_color", end_value=self._color_hover).backward()
 
     def paintEvent(self, event, /):
         """
@@ -35,11 +41,30 @@ class CubeItem(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(event.rect(), Qt.GlobalColor.white)
 
-        self._draw_shape(painter)
+        front: QPolygon = self.cube_item_data.front
+        self._draw_shape(painter, front)
 
-        #painter.drawText(0,0, )
+        clip_path: QPainterPath = QPainterPath()
+        clip_path.addRect(front.boundingRect().marginsRemoved(QMargins(8,8,8,8)))
+        painter.setClipPath(clip_path)
 
-    def _draw_shape(self, painter: QPainter):
+        self._draw_label(painter, front)
+
+        painter.setClipping(False)
+
+    def _draw_label(self, painter: QPainter, front: QPolygon):
+        painter.setFont(QFont("Roboto", 11, 600))
+        painter.setPen(QPen(self._base_color.darker(200)))
+        text_width, text_height = font_metrics(painter, self._label_name)
+        painter.save()
+
+        r: QRect = front.boundingRect()
+        painter.translate(r.center().x(), r.bottom())
+        painter.rotate(-90)
+        painter.drawText(8,text_height//4, self._label_name)
+        painter.restore()
+
+    def _draw_shape(self, painter: QPainter, front: QPolygon):
         painter.setPen(QPen(
             QColor.fromHsv(
                 self._base_color.hue(),
@@ -49,12 +74,12 @@ class CubeItem(QWidget):
             3)
         )
 
-        front: QPolygon = self.cube_item_data.front
+
         linear_gradient(painter, self._base_color, front.boundingRect())
         painter.drawPolygon(front)
 
         side: QPolygon = self.cube_item_data.side
-        linear_gradient(painter, self._base_color.darker(300), front.boundingRect())
+        linear_gradient(painter, self._base_color.darker(200), front.boundingRect())
         painter.drawPolygon(side)
         #
         top: QPolygon = self.cube_item_data.top
@@ -67,6 +92,7 @@ class CubeItem(QWidget):
     def set_base_color(self, clr: QColor) -> None:
         if self._base_color != clr:
             self._base_color = clr
+            self.update()
 
     @property
     def cube_depth(self):
@@ -95,7 +121,7 @@ if __name__ == '__main__':
     app: QApplication = QApplication(sys.argv)
     w: CubeItem = CubeItem()
     w.show()
-    print(w.width())
+
     app.exec()
 
 

@@ -1,8 +1,8 @@
 import math
 from typing import List, Dict
 
-from PySide6.QtCore import QPoint, QPointF
-from PySide6.QtGui import QPainter, QFontMetrics
+from PySide6.QtCore import QPoint, QPointF, QRect
+from PySide6.QtGui import QPainter, QFontMetrics, QColor, QLinearGradient
 from PySide6.QtWidgets import QWidget, QGraphicsDropShadowEffect
 
 
@@ -16,6 +16,16 @@ def font_metrics(painter: QPainter, text: str):
     h: int = metrics.height()
     w: int = metrics.horizontalAdvance(text)
     return w, h
+
+def linear_gradient(painter: QPainter, base_color: QColor, rect: QRect) -> None:
+    lg: QLinearGradient = QLinearGradient(
+        QPointF(rect.center().x(), rect.bottom()),
+        QPointF(rect.center().x(), rect.top())
+    )
+    lg.setColorAt(0, base_color.lighter(200))
+    lg.setColorAt(1, base_color.darker(200))
+    painter.setBrush(lg)
+
 
 def longest_name(entries: Dict[str, float]) -> str:
     return max(list(entries.keys()), key=len)
